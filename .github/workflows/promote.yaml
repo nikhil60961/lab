@@ -26,5 +26,5 @@ jobs:
           git fetch origin develop:origin/develop
           git fetch origin pre-dev:origin/pre-dev
           git checkout pre-dev
-          git merge origin/develop --no-ff -m "Auto-merge after successful develop deployment"
+          git merge refs/remotes/origin/develop --no-ff -m "Auto-merge after successful develop deployment"
           git push origin pre-dev
