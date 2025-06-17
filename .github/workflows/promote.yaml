@@ -1,34 +1,22 @@
-name: Keep New Dev ENV in Sync with Old Dev ENV
-
-on:
-  workflow_run:
-    workflows: ['Build and deploy Dev']
-    types:
-      - completed
-
+name: Test Push to Pre-Dev
+on: workflow_dispatch
 jobs:
-  merge:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Fetch full history to avoid merge issues
-
       - name: Setup Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Git Fetch, Merge, and Push
+      - name: Test Push
         env:
           GITHUB_TOKEN: ${{ secrets.NEW_DEV_SYNC }}
         run: |
-          git fetch origin develop:origin/develop
-          git fetch origin pre-dev:origin/pre-dev
           git checkout pre-dev
-          git merge refs/remotes/origin/develop --no-ff --allow-unrelated-histories -m "Auto-merge after successful develop deployment" || { echo "Merge failed"; git status; exit 1; }
+          echo "Test" > test.txt
+          git add test.txt
+          git commit -m "Test commit"
           git remote set-url origin https://x-access-token:$GITHUB_TOKEN@github.com/nikhil60961/lab.git
-          git push origin pre-dev || { echo "Push failed"; git status; exit 1; }
+          git push origin pre-dev
