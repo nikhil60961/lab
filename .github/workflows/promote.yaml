@@ -1,31 +1,51 @@
-name: Test Push to Pre-Dev
-on: workflow_dispatch # Allows manual triggering for testing
+name: Sync Develop to Pre-Dev
+
+on:
+  workflow_run:
+    workflows: ['Build and deploy Dev']
+    types:
+      - completed
+
 jobs:
-  test:
+  sync:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetch full history and all branches
+          fetch-depth: 0 # Fetch all branches and history
 
       - name: Setup Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global http.version HTTP/1.1
 
-      - name: Verify Branch Existence
+      - name: Install GitHub CLI
         run: |
-          git fetch origin pre-dev:pre-dev || { echo "Failed to fetch pre-dev"; git branch -r; exit 1; }
-          git checkout pre-dev || { echo "Checkout failed"; git branch -a; exit 1; }
+          sudo apt-get update
+          sudo apt-get install -y gh
 
-      - name: Test Push
+      - name: Debug Git State
+        run: |
+          git fetch origin
+          git branch -a
+          git remote -v
+          echo "Token set: ${GITHUB_TOKEN:0:5}..." # Partial token for debugging
+
+      - name: Merge Develop into Pre-Dev
         env:
           GITHUB_TOKEN: ${{ secrets.NEW_DEV_SYNC }}
         run: |
-          git checkout pre-dev
-          echo "Test" > test.txt
-          git add test.txt
-          git commit -m "Test commit"
-          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/nikhil60961/lab.git
-          git push origin pre-dev || { echo "Push failed"; git status; exit 1; }
+          git fetch origin develop:develop pre-dev:pre-dev || { echo "Fetch failed"; git branch -r; exit 1; }
+          git checkout pre-dev || { echo "Checkout pre-dev failed"; git branch -a; exit 1; }
+          git merge develop --no-ff --allow-unrelated-histories -m "Auto-merge develop into pre-dev after successful deployment" || { echo "Merge failed"; git status; exit 1; }
+          # Try direct push
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/nikhil60961/lab.git pre-dev || {
+            echo "Direct push to pre-dev failed, creating PR...";
+            TEMP_BRANCH="merge-develop-to-pre-dev-$(date +%s)";
+            git push https://x-access-token:${GITHUB_TOKEN}@github.com/nikhil60961/lab.git pre-dev:${TEMP_BRANCH};
+            gh pr create --base pre-dev --head ${TEMP_BRANCH} --title "Auto-merge develop into pre-dev" --body "Automated PR to sync develop into pre-dev after successful deployment" || echo "PR creation failed or already exists";
+            exit 0; # Exit gracefully to avoid failing the workflow
+          }
