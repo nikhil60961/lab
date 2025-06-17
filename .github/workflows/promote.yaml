@@ -19,12 +19,11 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Merge develop into pre-dev
-        env:
-          GH_TOKEN: ${{ secrets.NEW_DEV_SYNC }}
+      - name: Git merge and push
         run: |
           git fetch origin develop:origin/develop
           git fetch origin pre-dev:origin/pre-dev
           git checkout pre-dev
           git merge refs/remotes/origin/develop --no-ff --allow-unrelated-histories -m "Auto-merge after successful develop deployment"
+          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/nikhil60961/lab.git
           git push origin pre-dev
