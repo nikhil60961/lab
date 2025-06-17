@@ -1,0 +1,30 @@
+name: Keep New Dev ENV in Sync with Old Dev ENV
+
+on:
+  workflow_run:
+    workflows: ['Build and deploy Dev']
+    types:
+      - completed
+jobs:
+  merge:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge develop into pre-dev
+        env:
+          GH_TOKEN: ${{ secrets.NEW_DEV_SYNC_PAT }}
+        run: |
+          git fetch origin develop:origin/develop
+          git fetch origin pre-dev:origin/pre-dev
+          git checkout pre-dev
+          git merge origin/develop --no-ff -m "Auto-merge after successful develop deployment"
+          git push origin pre-dev
