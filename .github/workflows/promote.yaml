@@ -1,22 +1,29 @@
 name: Test Push to Pre-Dev
-on: workflow_dispatch
+on: workflow_dispatch # Allows manual triggering for testing
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch full history and all branches
+
       - name: Setup Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Verify Branch Existence
+        run: |
+          git fetch origin pre-dev:pre-dev || { echo "Failed to fetch pre-dev"; git branch -r; exit 1; }
+          git checkout pre-dev || { echo "Checkout failed"; git branch -a; exit 1; }
+
       - name: Test Push
         env:
           GITHUB_TOKEN: ${{ secrets.NEW_DEV_SYNC }}
         run: |
-          git checkout pre-dev
           echo "Test" > test.txt
           git add test.txt
           git commit -m "Test commit"
-          git remote set-url origin https://x-access-token:$GITHUB_TOKEN@github.com/nikhil60961/lab.git
-          git push origin pre-dev
+          git push https://x-access-token:$GITHUB_TOKEN@github.com/nikhil60961/lab.git pre-dev || { echo "Push failed"; git status; exit 1; }
