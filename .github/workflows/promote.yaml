@@ -21,7 +21,7 @@ jobs:
 
       - name: Merge develop into pre-dev
         env:
-          GH_TOKEN: ${{ secrets.NEW_DEV_SYNC_PAT }}
+          GH_TOKEN: ${{ secrets.NEW_DEV_SYNC }}
         run: |
           git fetch origin develop:origin/develop
           git fetch origin pre-dev:origin/pre-dev
