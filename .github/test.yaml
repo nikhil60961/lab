@@ -1,0 +1,22 @@
+name: Build and deploy Dev
+
+on:
+  push:
+    branches:
+      - 'develop'
+
+jobs:
+  build-images:
+    name: Build Docker Images
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: echo "Building Docker images"
+        run: echo "Building Docker images"
