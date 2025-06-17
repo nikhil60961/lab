@@ -23,7 +23,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.NEW_DEV_SYNC }}
         run: |
+          git checkout pre-dev
           echo "Test" > test.txt
           git add test.txt
           git commit -m "Test commit"
-          git push https://x-access-token:$GITHUB_TOKEN@github.com/nikhil60961/lab.git pre-dev || { echo "Push failed"; git status; exit 1; }
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/nikhil60961/lab.git
+          git push origin pre-dev || { echo "Push failed"; git status; exit 1; }
