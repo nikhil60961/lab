@@ -1,1 +1,40 @@
-hellooo
+#!/bin/bash
+
+ssh -o StrictHostKeyChecking=no pimcore@43.205.67.101 << 'EOF'
+sudo -u nikhil bash /home/nikhil/sync.sh
+EOF 
+
+ 
+   
+#!/bin/bash 
+ 
+# CONFIG
+REPO_URL="git@github.com:ext-qburst/pimcore.git"
+CREDENTIALS_USER="nikhil"
+CREDENTIALS_EMAIL="nikhil.r@qburst.com"
+BRANCH_SOURCE="develop"
+BRANCH_TARGET="pre-dev"
+
+# Clone the repo
+cd /tmp || exit 1
+rm -rf pimcore-merge
+git clone "$REPO_URL" pimcore-merge
+cd pimcore-merge || exit 1
+
+# Setup git identity
+git config user.name "$CREDENTIALS_USER"
+git config user.email "$CREDENTIALS_EMAIL"
+
+# Checkout target branch
+git checkout "$BRANCH_TARGET"
+
+# Pull latest changes
+git fetch origin
+git reset --hard origin/$BRANCH_TARGET
+git pull origin "$BRANCH_TARGET"
+
+# Merge source into target
+git merge origin/"$BRANCH_SOURCE" --no-ff -m "Auto-merge from $BRANCH_SOURCE to $BRANCH_TARGET [Jenkins]"
+
+# Push the merged changes
+git push origin "$BRANCH_TARGET"
