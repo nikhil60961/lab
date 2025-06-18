@@ -4,7 +4,7 @@ ssh -o StrictHostKeyChecking=no pimcore@43.205.67.101 << 'EOF'
 sudo -u nikhil bash /home/nikhil/sync.sh
 EOF 
 
-
+ 
    
 #!/bin/bash 
  
