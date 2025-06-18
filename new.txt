@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # CONFIG
-REPO_URL="https://github.com/ext-qburst/pimcore.git"
+REPO_URL="https://nikhil60961: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@github.com/ext-qburst/pimcore.git"
 CREDENTIALS_USER="nikhil"
 CREDENTIALS_EMAIL="nikhil.r@qburst.com"
 BRANCH_SOURCE="develop"
