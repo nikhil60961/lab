@@ -7,7 +7,7 @@ EOF
 
    
 #!/bin/bash 
-
+ 
 # CONFIG
 REPO_URL="git@github.com:ext-qburst/pimcore.git"
 CREDENTIALS_USER="nikhil"
