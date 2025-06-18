@@ -6,7 +6,7 @@ EOF
 
 
  
-#!/bin/bash
+#!/bin/bash 
 
 # CONFIG
 REPO_URL="git@github.com:ext-qburst/pimcore.git"
